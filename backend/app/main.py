@@ -2,12 +2,14 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.db import get_db
+from app.api.chat import router as chat_router
+from app.database import get_db
 
 app = FastAPI(
     title="SupportFlow AI API",
-    description="Backend API for the SupportFlow AI customer support agent",
+    description=("Backend API for the SupportFlow AI"
+                  "customer support agent"
+                  ),
     version="0.1.0",
 )
 
@@ -18,6 +20,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(chat_router)
 
 @app.get("/")
 async def root():
