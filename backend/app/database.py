@@ -4,18 +4,16 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-DATABASE_URL = (
-    "postgresql+asyncpg://"
-    "supportflow:devpassword@localhost:5432/supportflow"
-)
+from app.core.config import settings
 
 engine = create_async_engine(
-    DATABASE_URL,
+    settings.database_url,
     echo=False,
+    pool_pre_ping=True,
 )
 
 AsyncSessionLocal = async_sessionmaker(
-    engine,
+    bind=engine,
     class_=AsyncSession,
     expire_on_commit=False,
 )

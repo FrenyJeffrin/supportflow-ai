@@ -9,5 +9,5 @@ async def init_db():
             Base.metadata.create_all
         )
 
-if __name__ == "__main__":
-    asyncio.run(init_db())
+# if __name__ == "__main__":
+#     asyncio.run(init_db())

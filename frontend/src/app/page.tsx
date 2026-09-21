@@ -1,23 +1,160 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 
 export default function Home() {
 
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+  const [messages, setMessages] = useState<Message[]>([]);
+
   const [message, setMessage] = useState("");
-  const [response, setResponse] = useState("");
+
   const [loading, setLoading] = useState(false);
+
+  const [ready, setReady] = useState(false);
+
+
+  useEffect(() => {
+
+    async function initializeSession() {
+
+      try {
+
+        const savedSessionId =
+          localStorage.getItem(
+            "supportflow_session_id"
+          );
+
+
+        if (savedSessionId) {
+
+          setSessionId(savedSessionId);
+
+          const historyResponse =
+            await fetch(
+              `http://localhost:8000/api/v1/sessions/${savedSessionId}/messages`
+            );
+
+
+          if (historyResponse.ok) {
+
+            const history =
+              await historyResponse.json();
+
+
+            setMessages(
+              history.map(
+                (item: {
+                  role: "user" | "assistant";
+                  content: string;
+                }) => ({
+                  role: item.role,
+                  content: item.content,
+                })
+              )
+            );
+
+            setReady(true);
+
+            return;
+          }
+
+
+          localStorage.removeItem(
+            "supportflow_session_id"
+          );
+        }
+
+
+        const response = await fetch(
+          "http://localhost:8000/api/v1/sessions",
+          {
+            method: "POST",
+          }
+        );
+
+
+        if (!response.ok) {
+          throw new Error(
+            "Could not create session"
+          );
+        }
+
+
+        const session = await response.json();
+
+
+        localStorage.setItem(
+          "supportflow_session_id",
+          session.id
+        );
+
+
+        setSessionId(session.id);
+
+      } catch (error) {
+
+        console.error(
+          "Session initialization failed",
+          error
+        );
+
+      } finally {
+
+        setReady(true);
+      }
+
+    }
+
+
+    initializeSession();
+
+  }, []);
 
 
   async function sendMessage() {
 
-    if (!message.trim()) {
+    const cleanMessage =
+      message.trim();
+
+
+    if (
+      !cleanMessage ||
+      !sessionId ||
+      loading
+    ) {
       return;
     }
 
+
+    const userMessage: Message = {
+      role: "user",
+      content: cleanMessage,
+    };
+
+
+    setMessages(
+      (previous) => [
+        ...previous,
+        userMessage,
+      ]
+    );
+
+
+    setMessage("");
     setLoading(true);
-    setResponse("");
+
 
     try {
 
@@ -27,29 +164,53 @@ export default function Home() {
           method: "POST",
 
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
 
           body: JSON.stringify({
-            message,
+            session_id: sessionId,
+            message: cleanMessage,
           }),
         }
       );
 
+
       if (!result.ok) {
+
         throw new Error(
-          "Request failed"
+          "Chat request failed"
         );
       }
 
+
       const data = await result.json();
 
-      setResponse(data.response);
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.response,
+      };
+
+
+      setMessages(
+        (previous) => [
+          ...previous,
+          assistantMessage,
+        ]
+      );
 
     } catch (error) {
 
-      setResponse(
-        "Sorry, something went wrong."
+      setMessages(
+        (previous) => [
+          ...previous,
+          {
+            role: "assistant",
+            content:
+              "Sorry, I couldn't process that request.",
+          },
+        ]
       );
 
     } finally {
@@ -60,12 +221,23 @@ export default function Home() {
   }
 
 
+  if (!ready) {
+
+    return (
+      <main className="min-h-screen p-8">
+        Loading SupportFlow AI...
+      </main>
+    );
+
+  }
+
+
   return (
     <main className="min-h-screen bg-gray-50 p-8">
 
       <div className="mx-auto max-w-3xl">
 
-        <h1 className="text-3xl text-gray-400 font-bold">
+        <h1 className="text-3xl font-bold">
           SupportFlow AI
         </h1>
 
@@ -74,55 +246,118 @@ export default function Home() {
         </p>
 
 
-        <div className="mt-8 rounded-xl bg-white p-6 shadow">
+        <div className="mt-8 rounded-xl bg-white shadow">
 
-          <div className="min-h-40 rounded-lg border  border-gray-300 p-4">
 
-            {response ? (
-              <div>
-                <p className="text-sm font-semibold text-gray-300">
-                  SupportFlow AI
-                </p>
+          <div className="h-[500px] overflow-y-auto p-6">
 
-                <p className="mt-2 whitespace-pre-wrap text-gray-400">
-                  {response}
-                </p>
-              </div>
-            ) : (
+            {messages.length === 0 && (
+
               <p className="text-gray-400">
-                Ask me about orders, refunds,
-                shipping, or payments.
+                Ask me about orders,
+                refunds, shipping,
+                or payments.
               </p>
+
             )}
+
+
+            <div className="space-y-4">
+
+              {messages.map(
+                (item, index) => (
+
+                  <div
+                    key={index}
+                    className={
+                      item.role === "user"
+                        ? "ml-auto max-w-[80%] rounded-xl bg-black p-4 text-white"
+                        : "mr-auto max-w-[80%] rounded-xl bg-gray-100 p-4 text-gray-900"
+                    }
+                  >
+
+                    <p className="mb-1 text-xs font-semibold">
+
+                      {item.role === "user"
+                        ? "You"
+                        : "SupportFlow AI"}
+
+                    </p>
+
+
+                    <p className="whitespace-pre-wrap">
+                      {item.content}
+                    </p>
+
+                  </div>
+
+                )
+              )}
+
+
+              {loading && (
+
+                <div className="mr-auto rounded-xl bg-gray-100 p-4 text-gray-500">
+
+                  SupportFlow AI
+                  is thinking...
+
+                </div>
+
+              )}
+
+            </div>
 
           </div>
 
 
-          <div className="mt-4 flex gap-3">
+          <div className="border-t p-4">
 
-            <input
-              value={message}
-              onChange={(e) =>
-                setMessage(e.target.value)
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  sendMessage();
+            <div className="flex gap-3">
+
+              <input
+                value={message}
+
+                onChange={(event) =>
+                  setMessage(
+                    event.target.value
+                  )
                 }
-              }}
-              placeholder="Ask a question..."
-              className="flex-1 rounded-lg border border-gray-300 p-3 text-gray-400 placeholder:text-gray-300 outline-none"
-            />
 
-            <button
-              onClick={sendMessage}
-              disabled={loading}
-              className="rounded-lg bg-black px-5 py-3 text-white disabled:opacity-50"
-            >
-              {loading
-                ? "Thinking..."
-                : "Send"}
-            </button>
+                onKeyDown={(event) => {
+
+                  if (
+                    event.key === "Enter" &&
+                    !event.shiftKey
+                  ) {
+                    sendMessage();
+                  }
+
+                }}
+
+                placeholder="Ask a question..."
+
+                className="flex-1 rounded-lg border p-3 outline-none"
+              />
+
+
+              <button
+                onClick={sendMessage}
+                disabled={
+                  loading ||
+                  !sessionId
+                }
+
+                className="rounded-lg bg-black px-5 py-3 text-white disabled:opacity-50"
+              >
+
+                {loading
+                  ? "Thinking..."
+                  : "Send"}
+
+              </button>
+
+            </div>
 
           </div>
 
