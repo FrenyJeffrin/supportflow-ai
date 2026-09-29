@@ -5,10 +5,17 @@ import {
   useState,
 } from "react";
 
+type Source = {
+  title: string;
+  source: string;
+  score: number;
+};
+
 
 type Message = {
   role: "user" | "assistant";
   content: string;
+  sources?: Source[];
 };
 
 
@@ -190,6 +197,7 @@ export default function Home() {
       const assistantMessage: Message = {
         role: "assistant",
         content: data.response,
+        sources: data.sources ?? [],
       };
 
 
@@ -234,137 +242,86 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
-
       <div className="mx-auto max-w-3xl">
+        <h1 className="text-3xl font-bold">SupportFlow AI</h1>
 
-        <h1 className="text-3xl font-bold">
-          SupportFlow AI
-        </h1>
-
-        <p className="mt-2 text-gray-600">
-          AI Customer Support Agent
-        </p>
-
+        <p className="mt-2 text-gray-600">AI Customer Support Agent</p>
 
         <div className="mt-8 rounded-xl bg-white shadow">
-
-
           <div className="h-[500px] overflow-y-auto p-6">
-
             {messages.length === 0 && (
-
               <p className="text-gray-400">
-                Ask me about orders,
-                refunds, shipping,
-                or payments.
+                Ask me about orders, refunds, shipping, or payments.
               </p>
-
             )}
 
-
             <div className="space-y-4">
+              {messages.map((item, index) => (
+                <div
+                  key={index}
+                  className={
+                    item.role === "user"
+                      ? "ml-auto max-w-[80%] rounded-xl bg-black p-4 text-white"
+                      : "mr-auto max-w-[80%] rounded-xl bg-gray-100 p-4 text-gray-900"
+                  }
+                >
+                  <p className="mb-1 text-xs font-semibold">
+                    {item.role === "user" ? "You" : "SupportFlow AI"}
+                  </p>
 
-              {messages.map(
-                (item, index) => (
+                  <p className="whitespace-pre-wrap">{item.content}</p>
+                  {item.role === "assistant" && item.sources && item.sources.length > 0 && (
+                      <div className="mt-3 border-t pt-3">
+                        <p className="text-xs font-semibold">Sources</p>
 
-                  <div
-                    key={index}
-                    className={
-                      item.role === "user"
-                        ? "ml-auto max-w-[80%] rounded-xl bg-black p-4 text-white"
-                        : "mr-auto max-w-[80%] rounded-xl bg-gray-100 p-4 text-gray-900"
-                    }
-                  >
-
-                    <p className="mb-1 text-xs font-semibold">
-
-                      {item.role === "user"
-                        ? "You"
-                        : "SupportFlow AI"}
-
-                    </p>
-
-
-                    <p className="whitespace-pre-wrap">
-                      {item.content}
-                    </p>
-
-                  </div>
-
-                )
-              )}
-
+                        <div className="mt-2 space-y-1">
+                          {item.sources.map((source) => (
+                            <div
+                              key={source.source}
+                              className="text-xs text-gray-500"
+                            >
+                              📄 {source.title}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                </div>
+              ))}
 
               {loading && (
-
                 <div className="mr-auto rounded-xl bg-gray-100 p-4 text-gray-500">
-
-                  SupportFlow AI
-                  is thinking...
-
+                  SupportFlow AI is thinking...
                 </div>
-
               )}
-
             </div>
-
           </div>
 
-
           <div className="border-t p-4">
-
             <div className="flex gap-3">
-
               <input
                 value={message}
-
-                onChange={(event) =>
-                  setMessage(
-                    event.target.value
-                  )
-                }
-
+                onChange={(event) => setMessage(event.target.value)}
                 onKeyDown={(event) => {
-
-                  if (
-                    event.key === "Enter" &&
-                    !event.shiftKey
-                  ) {
+                  if (event.key === "Enter" && !event.shiftKey) {
                     sendMessage();
                   }
-
                 }}
-
                 placeholder="Ask a question..."
-
                 className="flex-1 rounded-lg border p-3 outline-none"
               />
 
-
               <button
                 onClick={sendMessage}
-                disabled={
-                  loading ||
-                  !sessionId
-                }
-
+                disabled={loading || !sessionId}
                 className="rounded-lg bg-black px-5 py-3 text-white disabled:opacity-50"
               >
-
-                {loading
-                  ? "Thinking..."
-                  : "Send"}
-
+                {loading ? "Thinking..." : "Send"}
               </button>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </main>
   );
 }
