@@ -86,3 +86,38 @@ Gemma 3
 Response
   ↓
 PostgreSQL
+
+## Day 4 — Retrieval-Augmented Generation
+
+Implemented:
+
+- Local nomic-embed-text embedding model
+- 768-dimensional embeddings
+- PostgreSQL pgvector extension
+- Knowledge document ingestion
+- Text chunking with overlap
+- Idempotent document ingestion using SHA-256
+- Semantic similarity retrieval
+- Cosine-distance search
+- Top-k retrieval
+- Grounded LLM responses
+- RAG source citations in the frontend
+- Conversation history + RAG integration
+
+### RAG Architecture
+
+Documents
+  ↓
+Chunking
+  ↓
+nomic-embed-text Embeddings
+  ↓
+pgvector
+  ↓
+Semantic retrieval
+  ↓
+Top-k context
+  ↓
+Gemma 3
+  ↓
+Grounded answer

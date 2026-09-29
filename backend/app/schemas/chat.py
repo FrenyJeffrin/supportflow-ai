@@ -9,6 +9,13 @@ class ChatRequest(BaseModel):
         max_length=2000,
     )
 
+class SourceResponse(BaseModel):
+    title: str
+    source: str
+    score: float
+
+
 class ChatResponse(BaseModel):
     session_id: uuid.UUID
     response: str
+    sources: list[SourceResponse] = []

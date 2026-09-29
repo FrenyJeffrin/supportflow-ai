@@ -1,7 +1,10 @@
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 from app.core.config import settings
-from app.services.prompts import SYSTEM_PROMPT
+from app.services.prompts import (
+    RAG_INSTRUCTIONS,
+    SYSTEM_PROMPT,
+)
 
 class LLMService:
 
@@ -15,11 +18,17 @@ class LLMService:
     async def generate_response(
             self,
             history: list[dict[str, str]],
+            context: str | None = None,
     ) -> str:
 
-        messages= [
-            SystemMessage(content=SYSTEM_PROMPT)
-            ]
+        system_content = (SYSTEM_PROMPT)
+
+
+        if context:
+          system_content += ("\n\n" + RAG_INSTRUCTIONS.format(context=context))
+
+
+        messages = [SystemMessage(content=system_content)]
 
         for item in history:
             if item['role'] == 'user':

@@ -6,9 +6,11 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     String,
     Text,
     Uuid,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import ( 
@@ -16,6 +18,8 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
 )
+
+from pgvector.sqlalchemy import VECTOR
 
 
 class Base(DeclarativeBase):
@@ -101,5 +105,86 @@ class Message(Base):
             "ix_messages_session_created",
             "session_id",
             "created_at",
+        ),
+    )
+
+class KnowledgeDocument(Base):
+    __tablename__ = "knowledge_documents"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    source: Mapped[str] = mapped_column(
+        String(500),
+        nullable=False,
+        unique=True,
+    )
+
+    content_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+
+class DocumentChunk(Base):
+    __tablename__ = "document_chunks"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey(
+            "knowledge_documents.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+
+    chunk_index: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    content: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    embedding: Mapped[list[float]] = mapped_column(
+        VECTOR(768),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "document_id",
+            "chunk_index",
+            name="uq_document_chunk",
+        ),
+
+        Index(
+            "ix_document_chunks_document_id",
+            "document_id",
         ),
     )
