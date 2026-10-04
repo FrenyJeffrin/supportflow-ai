@@ -13,6 +13,9 @@ from app.repositories.chat_repository import (
 from app.schemas.chat import (ChatRequest, ChatResponse, SourceResponse)
 from app.services.llm_service import LLMService
 from app.rag.retrieval import retrieve_context
+from app.services.agent_service import (
+    agent_service,
+)
 
 router= APIRouter(
     prefix="/api/v1/chat",
@@ -74,28 +77,18 @@ async def chat(
 
     try:
 
-        retrieved = await (retrieve_context(db=db, query=request.message,))
-
-        context = "\n\n".join(
-            [
-                (
-                    f"[Source: "
-                    f"{item.title}]\n"
-                    f"{item.content}"
-                )
-                for item in retrieved
-            ]
+        response = await (
+            agent_service.run(
+                history=history
+            )
         )
-
-
-        response = await (llm_service.generate_response(history=history, context=context,))
 
 
     except Exception as exc:
 
         raise HTTPException(
             status_code=502,
-            detail=("AI service unavailable"),
+            detail=("Agent service unavailable"),
         ) from exc
 
 
@@ -106,20 +99,8 @@ async def chat(
         content=response,
     )
 
-    unique_sources = {}
-
-    for item in retrieved:
-
-        if (item.source not in unique_sources):
-
-            unique_sources[item.source] = SourceResponse(
-                title=item.title,
-                source=item.source,
-                score=round(item.score, 3),
-            )
-
     return ChatResponse(
         session_id=request.session_id,
         response=response,
-        sources=list(unique_sources.values()),
+        sources=[],
     )

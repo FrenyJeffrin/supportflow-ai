@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     )
 
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "gemma3:1b"
+    ollama_model: str = "qwen3:4b"
 
     embedding_model: str = "nomic-embed-text"
     embedding_dimensions: int = 768

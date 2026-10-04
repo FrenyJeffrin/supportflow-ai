@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import {useEffect,useState,} from "react";
 
 type Source = {
   title: string;
@@ -20,15 +17,10 @@ type Message = {
 
 
 export default function Home() {
-
   const [sessionId, setSessionId] = useState<string | null>(null);
-
   const [messages, setMessages] = useState<Message[]>([]);
-
   const [message, setMessage] = useState("");
-
   const [loading, setLoading] = useState(false);
-
   const [ready, setReady] = useState(false);
 
 
@@ -38,27 +30,16 @@ export default function Home() {
 
       try {
 
-        const savedSessionId =
-          localStorage.getItem(
-            "supportflow_session_id"
-          );
-
+        const savedSessionId = localStorage.getItem("supportflow_session_id");
 
         if (savedSessionId) {
 
           setSessionId(savedSessionId);
 
-          const historyResponse =
-            await fetch(
-              `http://localhost:8000/api/v1/sessions/${savedSessionId}/messages`
-            );
-
+          const historyResponse = await fetch(`http://localhost:8000/api/v1/sessions/${savedSessionId}/messages`);
 
           if (historyResponse.ok) {
-
-            const history =
-              await historyResponse.json();
-
+            const history = await historyResponse.json();
 
             setMessages(
               history.map(
@@ -73,16 +54,11 @@ export default function Home() {
             );
 
             setReady(true);
-
             return;
           }
 
-
-          localStorage.removeItem(
-            "supportflow_session_id"
-          );
+          localStorage.removeItem("supportflow_session_id");
         }
-
 
         const response = await fetch(
           "http://localhost:8000/api/v1/sessions",
@@ -91,22 +67,15 @@ export default function Home() {
           }
         );
 
-
         if (!response.ok) {
           throw new Error(
             "Could not create session"
           );
         }
 
-
         const session = await response.json();
 
-
-        localStorage.setItem(
-          "supportflow_session_id",
-          session.id
-        );
-
+        localStorage.setItem("supportflow_session_id",session.id);
 
         setSessionId(session.id);
 
@@ -124,7 +93,6 @@ export default function Home() {
 
     }
 
-
     initializeSession();
 
   }, []);
@@ -132,9 +100,7 @@ export default function Home() {
 
   async function sendMessage() {
 
-    const cleanMessage =
-      message.trim();
-
+    const cleanMessage = message.trim();
 
     if (
       !cleanMessage ||
@@ -144,12 +110,10 @@ export default function Home() {
       return;
     }
 
-
     const userMessage: Message = {
       role: "user",
       content: cleanMessage,
     };
-
 
     setMessages(
       (previous) => [
@@ -158,10 +122,8 @@ export default function Home() {
       ]
     );
 
-
     setMessage("");
     setLoading(true);
-
 
     try {
 
@@ -243,14 +205,14 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-bold">SupportFlow AI</h1>
+        <h1 className="text-3xl text-gray-700 font-bold">SupportFlow AI</h1>
 
         <p className="mt-2 text-gray-600">AI Customer Support Agent</p>
 
         <div className="mt-8 rounded-xl bg-white shadow">
           <div className="h-[500px] overflow-y-auto p-6">
             {messages.length === 0 && (
-              <p className="text-gray-400">
+              <p className="text-gray-600">
                 Ask me about orders, refunds, shipping, or payments.
               </p>
             )}
@@ -298,7 +260,7 @@ export default function Home() {
           </div>
 
           <div className="border-t p-4">
-            <div className="flex gap-3">
+            <div className="flex text-gray-600 gap-3">
               <input
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
@@ -308,7 +270,7 @@ export default function Home() {
                   }
                 }}
                 placeholder="Ask a question..."
-                className="flex-1 rounded-lg border p-3 outline-none"
+                className="flex-1 text-gray-300 rounded-lg border p-3 outline-none"
               />
 
               <button

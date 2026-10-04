@@ -121,3 +121,62 @@ Top-k context
 Gemma 3
   ↓
 Grounded answer
+
+## Day 5 — Agentic AI and Tool Calling
+
+Implemented:
+
+- LangGraph agent orchestration
+- Local Qwen3 tool-capable model
+- Native LLM tool calling
+- RAG as an agent tool
+- Order lookup tool
+- Deterministic refund eligibility
+- Refund execution tool
+- Support ticket creation
+- Multi-step agent loops
+- Explicit action confirmation
+- Refund idempotency
+- Separation of LLM decisions and business logic
+- Synthetic commerce dataset
+- Agent safety boundaries
+
+### Agent Architecture
+
+Customer
+  ↓
+FastAPI
+  ↓
+LangGraph Agent
+  ↓
+Qwen3
+  ↓
+Tool decision
+  ├── Knowledge search
+  ├── Order lookup
+  ├── Refund eligibility
+  ├── Refund processing
+  └── Ticket creation
+  ↓
+Tool result
+  ↓
+Agent
+  ↓
+Customer response
+
+### Safety Design
+
+The LLM does not directly modify business data.
+
+All state-changing actions pass through deterministic
+application services.
+
+Refund execution requires:
+
+1. Valid order
+2. Deterministic eligibility check
+3. Explicit confirmation
+4. Idempotency protection
+
+For a real financial system, conversational confirmation
+would be replaced by authenticated UI/API authorization.
