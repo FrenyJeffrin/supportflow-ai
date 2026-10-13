@@ -7,8 +7,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Order, Refund
+from app.cache.order_cache import (
+    invalidate_order,
+)
 
-
+    
 async def check_eligibility(
     order: Order,
 ) -> tuple[bool, str]:
@@ -57,8 +60,8 @@ async def check_eligibility(
             "the promised delivery date."
         ),
     )
-
-
+    
+    
 async def create_refund(
     db: AsyncSession,
     order: Order,
@@ -92,5 +95,8 @@ async def create_refund(
 
     await db.commit()
     await db.refresh(refund)
+    await invalidate_order(order.order_number)
 
     return refund
+
+    

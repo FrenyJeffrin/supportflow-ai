@@ -18,6 +18,18 @@ class Settings(BaseSettings):
 
     rag_top_k: int = 4
 
+    redis_url: str = ("redis://localhost:6379/0")
+
+    celery_broker_url: str = ("redis://localhost:6379/1")
+
+    celery_result_backend: str = ("redis://localhost:6379/2")
+
+    order_cache_ttl: int = 2000
+
+    chat_rate_limit: int = 20
+
+    chat_rate_window_seconds: int = 60
+
 model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",

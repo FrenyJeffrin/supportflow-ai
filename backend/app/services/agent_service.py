@@ -7,6 +7,13 @@ from app.agents.graph import (
     agent_graph,
 )
 
+import time
+
+from app.observability.metrics import (
+    AGENT_ERRORS,
+    AGENT_LATENCY,
+    AGENT_RUNS,
+)
 
 class AgentService:
 
@@ -18,7 +25,6 @@ class AgentService:
     ) -> str:
 
         messages = []
-
 
         for item in history:
 
@@ -44,23 +50,27 @@ class AgentService:
                         ]
                     )
                 )
+        AGENT_RUNS.inc()
 
+        start = time.perf_counter()
 
-        result = await (
-            agent_graph.ainvoke({
-                "messages": messages
-            })
-        )
+        try:
 
+            result = await agent_graph.ainvoke({"messages": messages})
 
-        final_message = (
-            result["messages"][-1]
-        )
+        except Exception:
 
+            AGENT_ERRORS.inc()
 
-        return str(
-            final_message.content
-        )
+            raise
+
+        finally:
+
+            AGENT_LATENCY.observe(time.perf_counter() - start)
+
+        final_message = (result["messages"][-1])
+
+        return str(final_message.content)
 
 
 agent_service = AgentService()

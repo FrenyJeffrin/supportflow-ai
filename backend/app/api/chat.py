@@ -16,6 +16,9 @@ from app.rag.retrieval import retrieve_context
 from app.services.agent_service import (
     agent_service,
 )
+from app.core.rate_limit import (
+    check_chat_rate_limit,
+)
 
 router= APIRouter(
     prefix="/api/v1/chat",
@@ -48,6 +51,20 @@ async def chat(
             detail="Session not found",
         )
 
+    allowed, request_count = (
+        await check_chat_rate_limit(
+            request.session_id
+        )
+    )
+
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                "Too many chat requests. "
+                "Please try again shortly."
+            ),
+        )
 
     await add_message(
         db=db,
@@ -64,7 +81,6 @@ async def chat(
             limit=10,
         )
     )
-
 
     history = [
         {
@@ -104,3 +120,4 @@ async def chat(
         response=response,
         sources=[],
     )
+

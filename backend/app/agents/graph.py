@@ -29,6 +29,10 @@ from app.core.config import settings
 
 from app.tools import TOOLS
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 model = ChatOllama(
     model=settings.ollama_model,
     base_url=settings.ollama_base_url,
@@ -44,6 +48,7 @@ model_with_tools = (
 async def call_model(
     state: AgentState,
 ):
+    logger.info("Starting agent execution")
 
     messages = [
         SystemMessage(
@@ -101,4 +106,8 @@ builder.add_edge(
 
 agent_graph = (
     builder.compile()
+)
+
+logger.info(
+    "LangGraph agent initialized successfully"
 )

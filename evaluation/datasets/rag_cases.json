@@ -1,0 +1,26 @@
+[
+  {
+    "question": "How many days do I have to return a physical product?",
+    "expected_source": "return_policy.md"
+  },
+  {
+    "question": "How long does SupportFlow take to process an approved refund?",
+    "expected_source": "refund_policy.md"
+  },
+  {
+    "question": "What is the standard shipping time?",
+    "expected_source": "shipping_policy.md"
+  },
+  {
+    "question": "How long is the warranty on electronics?",
+    "expected_source": "warranty_policy.md"
+  },
+  {
+    "question": "When should an unresolved case be escalated?",
+    "expected_source": "support_policy.md"
+  },
+  {
+    "question": "Who pays return shipping when SupportFlow sent the wrong item?",
+    "expected_source": "return_policy.md"
+  }
+]

@@ -180,3 +180,63 @@ Refund execution requires:
 
 For a real financial system, conversational confirmation
 would be replaced by authenticated UI/API authorization.
+
+## Day 6 — Production Engineering and Evaluation
+
+Implemented:
+
+### Redis
+
+- Redis-backed application cache
+- Cache-aside pattern
+- Order caching
+- Cache TTL
+- Explicit cache invalidation
+- Distributed chat rate limiting
+
+### Background Processing
+
+- Celery
+- Redis message broker
+- Redis result backend
+- Background workers
+- Retry with exponential backoff
+- Late task acknowledgement
+- Windows development worker configuration
+
+### Observability
+
+- Prometheus metrics
+- HTTP request count
+- HTTP latency
+- Agent execution count
+- Agent error count
+- Agent latency
+- RAG retrieval count
+- RAG latency
+- Redis cache hits/misses
+- Structured application logging
+- Liveness checks
+- Readiness checks
+
+### AI Evaluation
+
+- Versioned evaluation datasets
+- RAG Hit Rate@K
+- Mean Reciprocal Rank
+- Agent tool-selection evaluation
+- Forbidden-tool safety evaluation
+- Regression evaluation
+
+### Architecture Principles
+
+PostgreSQL remains the source of truth.
+
+Redis is used for ephemeral cache, rate-limit state,
+and queue transport.
+
+The LLM is responsible for orchestration, while
+deterministic application services enforce business rules.
+
+AI quality is evaluated separately from infrastructure
+health and performance.
